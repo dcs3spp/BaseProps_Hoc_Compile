@@ -183,8 +183,7 @@ export const withErrorListener = <BaseProps extends RequiredProps>(
   >(
     mapState,
     dispatchProps
-  )(ErrorListener); // issue solved by piotrwitek, thanks again!!! Now I have a fully typed connected HoC!!!!!
-
+  )(ErrorListener);
   // connect to router
   const RoutedHoc = withRouter(ConnectedHoc);
 

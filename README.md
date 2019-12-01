@@ -1,9 +1,90 @@
 # Overview
 
-I am new user trying to learn react and redux. I have created this project to try and use a higher component to listen for errors notified from the redux store, targeted for components, via their id. I am assigning an id to components using [cuid](https://www.npmjs.com/package/cuid). If the higher order component detects errors filtered from the store it will render them, otherwise the base wrapped component will be rendered. The code for the higher order component is in _src/higher-order-components_ folder.
+Code not compiling higher-order-components/withErrorListener.tsx with BaseProps.....
+I think what is happening is that it cannot perform the cast to BaseProps because these properties have been removed from InjectedProps. 
 
-In this example the base component (PostsListConnected within src/containers/PostsList) retrieves posts from [jsonplaceholder](https://jsonplaceholder.typicode.com/posts). redux-observable is the middleware used to retrieve post resources from _jsonplaceholder_ by dispatching an _ALL_POSTS_REQUEST_ action. A network connection failure is randomly simulated by the middleware epic to trigger an _ERROR_NOTIFY_ action that the higher order component subscribes to.
+``` typescript
+return <BaseComponent {...restProps as BaseProps} />; // this line causes compile error.
+```
 
-This project was initially created to aid with understanding for stackoverflow question, raised [here](https://stackoverflow.com/questions/59036508/why-is-dispatch-property-undefined-for-a-connected-wrapped-component-within-a-co?noredirect=1#comment104316034_59036508). The issue raised there is not currently manifested here and seems to be working....However, a different issue is arising, i.e. the component id used to filter the errors in the redux error store is undefined. This is reflected in the console logs. The source code for the filter is in _src/fatures/errors/selectors.ts_ and is connected to the redux store in the Higher Order Component.
+``` bash
+Conversion of type '{ filteredErrors: FailureNotify[]; clearError: (fromAction: string, fromComponent: string, history?: History<any> | undefined, navigateTo?: string | 
+undefined) => PayloadAction<constants.CLEAR_ERROR, ClearError>; ... 4 more ...; children?: ReactNode; }' to type 'BaseProps' may be a mistake because neither type sufficiently overl
+aps with the other. If this was intentional, convert the expression to 'unknown' first.  TS2352
+```
 
-How can the higher order component filter the errors on the redux store by the component id that it is assigning to it's wrapped base component? Currently, it is undefined in the selector console log.
+``` typescript
+/**
+   * ErrorListener component class
+   * This should:
+   * - Pass on base component properties when rendering base component
+   * - Contain redux state and dispatch properties....these are not passed down into base component
+   */
+  class ErrorListener extends React.Component<InjectedProps, never> {
+    static displayName = `withErrorListener(${BaseComponent.name})`;
+    static readonly WrappedComponent = BaseComponent;
+
+    /**
+     * Render error if there is one to display, otherwise render the base component
+     * @returns Rendered error if error occurred. Rendered base component if no error occurred. Base Component is rendered with it's own props only
+     */
+    render() {
+      const { ...restProps } = this.props;
+      console.log(
+        `withErrorListener [error_count=${this.props.filteredErrors.length}]`
+      );
+
+      if (this.props.filteredErrors.length > 0) {
+        return (
+          <ErrorInfoConnected
+            info={this.props.filteredErrors[0]}
+            {...restProps}
+          />
+        );
+      } else {
+        // false positive linter error, tsc compiles
+        return <BaseComponent {...restProps as BaseProps} />;
+      }
+    }
+  }
+```
+
+If the code is updated to be InjectedProps & BaseProps as listed below then revert back to the original compile error with connect function and have to cast to any....
+
+``` typescript
+/**
+   * ErrorListener component class
+   * This should:
+   * - Pass on base component properties when rendering base component
+   * - Contain redux state and dispatch properties....these are not passed down into base component
+   */
+  class ErrorListener extends React.Component<InjectedProps & BaseProps, never> {
+    static displayName = `withErrorListener(${BaseComponent.name})`;
+    static readonly WrappedComponent = BaseComponent;
+
+    /**
+     * Render error if there is one to display, otherwise render the base component
+     * @returns Rendered error if error occurred. Rendered base component if no error occurred. Base Component is rendered with it's own props only
+     */
+    render() {
+      const { ...restProps } = this.props;
+      console.log(
+        `withErrorListener [error_count=${this.props.filteredErrors.length}]`
+      );
+
+      if (this.props.filteredErrors.length > 0) {
+        return (
+          <ErrorInfoConnected
+            info={this.props.filteredErrors[0]}
+            {...restProps}
+          />
+        );
+      } else {
+        // false positive linter error, tsc compiles
+        return <BaseComponent {...restProps as BaseProps} />;
+      }
+    }
+  }
+```
+
+How is it possible to pass on base component's own properties without having to cast to any?
