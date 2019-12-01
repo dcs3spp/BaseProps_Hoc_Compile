@@ -169,7 +169,7 @@ export const withErrorListener = <BaseProps extends RequiredProps>(
         );
       } else {
         // false positive linter error, tsc compiles
-        return <BaseComponent {...restProps as BaseProps} />;
+        return <BaseComponent {...(restProps as BaseProps)} />;
       }
     }
   }
@@ -185,8 +185,9 @@ export const withErrorListener = <BaseProps extends RequiredProps>(
     dispatchProps
   )(ErrorListener);
   // connect to router
+  
+  // inject uniqueId
   const RoutedHoc = withRouter(ConnectedHoc);
 
-  // inject uniqueId
   return withId(RoutedHoc);
 };
