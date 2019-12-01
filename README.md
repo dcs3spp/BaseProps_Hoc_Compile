@@ -12,6 +12,8 @@ undefined) => PayloadAction<constants.CLEAR_ERROR, ClearError>; ... 4 more ...; 
 aps with the other. If this was intentional, convert the expression to 'unknown' first.  TS2352
 ```
 
+A similar compile error occurs if an additional property is added to the HocProps interface in the withErrorBoundary class from the playground. withErrorBoundary is included in the higher-order-components folder of this project. Uncomment the additional property to introduce a similar compile error.
+
 ``` typescript
 /**
    * ErrorListener component class
