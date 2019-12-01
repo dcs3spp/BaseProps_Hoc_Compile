@@ -1,7 +1,6 @@
 # Overview
 
 Code not compiling higher-order-components/withErrorListener.tsx with BaseProps.....
-I think what is happening is that it cannot perform the cast to BaseProps because these properties have been removed from InjectedProps. 
 
 ``` typescript
 return <BaseComponent {...restProps as BaseProps} />; // this line causes compile error.
@@ -42,12 +41,12 @@ aps with the other. If this was intentional, convert the expression to 'unknown'
           />
         );
       } else {
-        // false positive linter error, tsc compiles
         return <BaseComponent {...restProps as BaseProps} />;
       }
     }
   }
 ```
+I think what is happening is that it cannot perform the cast to BaseProps because these properties have been removed from InjectedProps. 
 
 If the code is updated to be InjectedProps & BaseProps as listed below then revert back to the original compile error with connect function and have to cast to any....
 
@@ -80,11 +79,10 @@ If the code is updated to be InjectedProps & BaseProps as listed below then reve
           />
         );
       } else {
-        // false positive linter error, tsc compiles
         return <BaseComponent {...restProps as BaseProps} />;
       }
     }
   }
 ```
 
-How is it possible to pass on base component's own properties without having to cast to any?
+How is it possible to pass on base component's own properties using nested HOC?
