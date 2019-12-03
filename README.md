@@ -88,3 +88,9 @@ If the code is updated to be InjectedProps & BaseProps as listed below then reve
 ```
 
 How is it possible to pass on base component's own properties using nested HOC without having to cast connect component argument as any?
+
+Should the base component properties be rendered as:
+
+``` typescript
+return <BaseComponent {...((restProps as unknown) as BaseProps)} />;
+```
